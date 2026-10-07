@@ -1,0 +1,1067 @@
+﻿import { useEffect, useState } from "react";
+import SimpleMode from "./SimpleMode";
+import PhishingDefense from "./PhishingDefense";
+import ImpersonationDetection from "./ImpersonationDetection";
+import DeepfakeDetection from "./DeepfakeDetection";
+import BehaviouralThreats from "./BehaviouralThreats";
+import IncidentResponse from "./IncidentResponse";
+import ThreatIntelligence from "./ThreatIntelligence";
+import Reports from "./Reports";
+import Settings from "./Settings";
+
+type Props = {
+  onLogout: () => void;
+};
+
+const navItems = [
+  { icon: "⌂", label: "Overview" },
+  { icon: "◉", label: "Threat Scanner" },
+  { icon: "⌁", label: "Phishing Defense" },
+  { icon: "◇", label: "Impersonation" },
+  { icon: "◈", label: "Deepfake Detection" },
+  { icon: "◎", label: "Behavioural Threats" },
+  { icon: "!", label: "Incident Response" },
+  { icon: "⌬", label: "Threat Intelligence" },
+  { icon: "▤", label: "Reports" },
+];
+
+const alerts = [
+  {
+    level: "CRITICAL",
+    title: "Credential harvesting campaign detected",
+    source: "185.72.14.91",
+    time: "2 min ago",
+  },
+  {
+    level: "HIGH",
+    title: "Suspicious PowerShell execution",
+    source: "ENDPOINT-042",
+    time: "7 min ago",
+  },
+  {
+    level: "HIGH",
+    title: "Malicious domain communication",
+    source: "10.24.8.117",
+    time: "13 min ago",
+  },
+  {
+    level: "MEDIUM",
+    title: "Unusual authentication pattern",
+    source: "USER-0184",
+    time: "21 min ago",
+  },
+];
+
+const incidents = [
+  ["INC-2841", "Credential Theft", "Contained", "2m"],
+  ["INC-2839", "Malware Execution", "Investigating", "8m"],
+  ["INC-2837", "Phishing Attempt", "Contained", "14m"],
+  ["INC-2832", "Suspicious Login", "Monitoring", "31m"],
+];
+
+
+function ThreatScanner() {
+  const [scannerType, setScannerType] = useState("DOMAIN");
+  const [scannerTarget, setScannerTarget] = useState("");
+  const [scannerStatus, setScannerStatus] = useState("IDLE");
+  const [scannerResult, setScannerResult] = useState(false);
+
+  const runThreatScan = () => {
+    if (!scannerTarget.trim() || scannerStatus === "SCANNING") return;
+
+    setScannerStatus("SCANNING");
+    setScannerResult(false);
+
+    window.setTimeout(() => {
+      setScannerStatus("COMPLETE");
+      setScannerResult(true);
+    }, 1600);
+  };
+
+  const placeholder =
+    scannerType === "IP"
+      ? "Enter IP address e.g. 185.72.14.91"
+      : scannerType === "DOMAIN"
+      ? "Enter domain e.g. suspicious-example.com"
+      : scannerType === "URL"
+      ? "Enter full URL e.g. https://example.com/login"
+      : "Enter SHA-256 / SHA-1 / MD5 file hash";
+
+  return (
+    <div className="threat-scanner-page">
+      <div className="scanner-intro">
+        <div>
+          <span className="soc-eyebrow">THREAT INTELLIGENCE / ANALYSIS</span>
+          <h2>SCAN A DIGITAL INDICATOR.</h2>
+          <p>
+            Analyze IP addresses, domains, URLs and file hashes for suspicious
+            activity and potential security threats.
+          </p>
+        </div>
+      </div>
+
+      <section className="scanner-workspace">
+        <div className="scanner-types">
+          {["IP", "DOMAIN", "URL", "FILE HASH"].map((type) => (
+            <button
+              key={type}
+              className={scannerType === type ? "active" : ""}
+              onClick={() => {
+                setScannerType(type);
+                setScannerResult(false);
+                setScannerStatus("IDLE");
+              }}
+            >
+              <span>
+                {type === "IP"
+                  ? "◈"
+                  : type === "DOMAIN"
+                  ? "⌁"
+                  : type === "URL"
+                  ? "↗"
+                  : "▣"}
+              </span>
+              {type}
+            </button>
+          ))}
+        </div>
+
+        <div className="scanner-input-area">
+          <label>
+            {scannerType === "FILE HASH"
+              ? "FILE HASH INDICATOR"
+              : `${scannerType} INDICATOR`}
+          </label>
+
+          <div className="scanner-input-row">
+            <input
+              value={scannerTarget}
+              onChange={(event) => {
+                setScannerTarget(event.target.value);
+                setScannerResult(false);
+                setScannerStatus("IDLE");
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") runThreatScan();
+              }}
+              placeholder={placeholder}
+              spellCheck={false}
+            />
+
+            <button
+              className={scannerStatus === "SCANNING" ? "scanning" : ""}
+              onClick={runThreatScan}
+              disabled={!scannerTarget.trim() || scannerStatus === "SCANNING"}
+            >
+              <span>◎</span>
+              {scannerStatus === "SCANNING" ? "ANALYZING..." : "RUN SCAN"}
+            </button>
+          </div>
+
+          <div className="scanner-input-meta">
+            <span>CYBERGUARD ANALYSIS ENGINE</span>
+            <span>HEURISTIC + IOC CORRELATION</span>
+            <span>STATUS: {scannerStatus}</span>
+          </div>
+        </div>
+      </section>
+
+      {!scannerResult && scannerStatus !== "SCANNING" && (
+        <section className="scanner-empty-state">
+          <div className="scanner-core">
+            <div className="scanner-core-ring ring-one" />
+            <div className="scanner-core-ring ring-two" />
+            <div className="scanner-core-ring ring-three" />
+            <span>◎</span>
+          </div>
+
+          <strong>AWAITING INDICATOR</strong>
+          <p>
+            Submit an IP, domain, URL or file hash to begin threat analysis.
+          </p>
+        </section>
+      )}
+
+      {scannerStatus === "SCANNING" && (
+        <section className="scanner-analysis-state">
+          <div className="scanner-progress">
+            <div />
+          </div>
+          <span>RUNNING THREAT ANALYSIS...</span>
+          <strong>CORRELATING SECURITY INDICATORS</strong>
+          <p>Checking structure, reputation signals and suspicious patterns.</p>
+        </section>
+      )}
+
+      {scannerResult && (
+        <section className="scanner-result">
+          <div className="scanner-result-header">
+            <div>
+              <span>ANALYSIS COMPLETE</span>
+              <h3>THREAT ASSESSMENT</h3>
+            </div>
+
+            <div className="scanner-result-status">
+              <i />
+              SCAN COMPLETE
+            </div>
+          </div>
+
+          <div className="scanner-result-grid">
+            <div className="scanner-score-card">
+              <span>THREAT SCORE</span>
+              <strong>62</strong>
+              <small>/ 100</small>
+              <b>MEDIUM RISK</b>
+            </div>
+
+            <div className="scanner-findings">
+              <div>
+                <span>VERDICT</span>
+                <strong className="warning-text">SUSPICIOUS ACTIVITY</strong>
+              </div>
+
+              <div>
+                <span>INDICATORS</span>
+                <strong>3 POTENTIAL MATCHES</strong>
+              </div>
+
+              <div>
+                <span>CONFIDENCE</span>
+                <strong>91.4%</strong>
+              </div>
+
+              <div>
+                <span>SCANNED TARGET</span>
+                <strong className="target-text">{scannerTarget}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="scanner-recommendation">
+            <div className="recommendation-icon">AI</div>
+            <div>
+              <span>AI RECOMMENDATION</span>
+              <p>
+                Maintain elevated monitoring for this indicator. Investigate
+                related authentication activity and correlate against known
+                threat intelligence before allowing trusted access.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+export default function CommandCenter({ onLogout }: Props) {
+  const [activeNav, setActiveNav] = useState("Overview");
+  const [scanRunning, setScanRunning] = useState(false);
+  const [scanCount, setScanCount] = useState(411);
+  const [time, setTime] = useState(new Date());
+  const [threatFilter, setThreatFilter] = useState("ALL");
+  const [selectedThreat, setSelectedThreat] = useState<string | null>(null);
+  const [simpleMode, setSimpleMode] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setTime(new Date()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const runScan = () => {
+    if (scanRunning) return;
+
+    setScanRunning(true);
+
+    window.setTimeout(() => {
+      setScanCount((value) => value + 1);
+      setScanRunning(false);
+    }, 1800);
+  };
+
+  if (simpleMode) {
+    return (
+      <SimpleMode onSwitchToExpert={() => setSimpleMode(false)} />
+    );
+  }
+
+  return (
+    <main className="soc-shell">
+      <div className="soc-noise" />
+      <SocCursor />
+
+      <aside className="soc-sidebar">
+        <div className="soc-logo">
+          <div className="soc-logo-mark">C</div>
+          <div>
+            <strong>CYBERGUARD</strong>
+            <span>SOC COMMAND CENTER</span>
+          </div>
+        </div>
+
+        <div className="soc-sidebar-section">
+          <span>OPERATIONS</span>
+
+          <nav>
+            {navItems.map((item) => (
+              <button
+                key={item.label}
+                className={`soc-nav-item ${
+                  activeNav === item.label ? "active" : ""
+                }`}
+                onClick={() => setActiveNav(item.label)}
+              >
+                <i>{item.icon}</i>
+                <span>{item.label}</span>
+                {item.label === "Threat Scanner" && (
+                  <b className="nav-badge">27</b>
+                )}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="soc-sidebar-section secondary-nav">
+          <span>SYSTEM</span>
+
+          <button
+            className={`soc-nav-item ${
+              activeNav === "Settings" ? "active" : ""
+            }`}
+            onClick={() => setActiveNav("Settings")}
+          >
+            <i>⚙</i>
+            <span>Settings</span>
+          </button>
+        </div>
+
+        <div className="soc-sidebar-bottom">
+          <div className="soc-agent-status">
+            <div className="status-orb" />
+            <div>
+              <strong>AI DEFENSE ENGINE</strong>
+              <span>ACTIVE / MONITORING</span>
+            </div>
+          </div>
+
+          <button className="soc-logout" onClick={onLogout}>
+            <span>↪</span>
+            EXIT COMMAND CENTER
+          </button>
+        </div>
+      </aside>
+
+      <section className="soc-main">
+        <header className="soc-topbar">
+          <div>
+            <div className="soc-breadcrumb">
+              CYBERGUARD <span>/</span> COMMAND CENTER
+            </div>
+            <h1>{activeNav}</h1>
+          </div>
+
+          <div className="soc-top-actions">
+
+            <button
+              className="soc-mode-switch-button"
+              onClick={() => setSimpleMode(true)}
+            >
+              SIMPLE MODE
+            </button>
+            <div className="soc-live">
+              <i />
+              SYSTEMS OPERATIONAL
+            </div>
+
+            <div className="soc-clock">
+              <strong>
+                {time.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                  hour12: false,
+                })}
+              </strong>
+              <span>LOCAL SECURITY TIME</span>
+            </div>
+          </div>
+        </header>
+
+        <div className="soc-content">
+          {activeNav === "Threat Scanner" ? (
+      <ThreatScanner />
+    ) : activeNav === "Phishing Defense" ? (
+      <PhishingDefense />
+    ) : activeNav === "Impersonation" ? (
+      <ImpersonationDetection />
+    ) : activeNav === "Deepfake Detection" ? (
+      <DeepfakeDetection />
+    ) : activeNav === "Behavioural Threats" ? (
+      <BehaviouralThreats />
+    ) : activeNav === "Incident Response" ? (
+      <IncidentResponse />
+    ) : activeNav === "Threat Intelligence" ? (
+      <ThreatIntelligence />
+    ) : activeNav === "Reports" ? (
+      <Reports />
+    ) : activeNav === "Settings" ? (<Settings />) : (
+            <>
+              <section className="soc-command-row">
+            <div>
+              <span className="soc-eyebrow">SECURITY OPERATIONS / LIVE</span>
+              <h2>DEFEND YOUR DIGITAL FRONTIER.</h2>
+              <p>
+                Autonomous threat detection, intelligence and incident
+                response across your digital environment.
+              </p>
+            </div>
+
+            <button
+              className={`soc-scan-button ${
+                scanRunning ? "scanning" : ""
+              }`}
+              onClick={runScan}
+            >
+              <span className="scan-icon">◎</span>
+              {scanRunning ? "SCANNING ENVIRONMENT..." : "RUN THREAT SCAN"}
+              <b>↗</b>
+            </button>
+          </section>
+
+          <section className="security-overview-strip">
+            <div className="security-risk">
+              <div className="risk-indicator">
+                <i />
+              </div>
+
+              <div>
+                <span>OVERALL SECURITY RISK</span>
+                <strong>ELEVATED</strong>
+              </div>
+
+              <p>
+                3 high-risk events require investigation.
+              </p>
+            </div>
+
+            <div className="quick-actions">
+              <span>QUICK ACTIONS</span>
+
+              <button onClick={runScan}>
+                <i>◎</i>
+                SCAN IP
+              </button>
+
+              <button onClick={() => setActiveNav("Phishing Defense")}>
+                <i>⌁</i>
+                CHECK URL
+              </button>
+
+              <button onClick={() => setActiveNav("Threat Scanner")}>
+                <i>◉</i>
+                CRITICAL ALERTS
+              </button>
+
+              <button onClick={() => setActiveNav("Incident Response")}>
+                <i>!</i>
+                OPEN INCIDENTS
+              </button>
+            </div>
+          </section>
+
+          <section className="soc-metrics">
+            <Metric
+              label="THREATS DETECTED"
+              value={scanCount.toLocaleString()}
+              change="+12.4%"
+              tone="critical"
+              icon="!"
+            />
+            <Metric
+              label="ACTIVE ALERTS"
+              value="27"
+              change="+4 today"
+              tone="warning"
+              icon="◉"
+            />
+            <Metric
+              label="CONTAINED TODAY"
+              value="143"
+              change="+18.7%"
+              tone="success"
+              icon="✓"
+            />
+            <Metric
+              label="GLOBAL IOCs"
+              value="8.4K"
+              change="LIVE FEED"
+              tone="info"
+              icon="⌬"
+            />
+          </section>
+
+          <section className="soc-dashboard-grid">
+            <div className="soc-panel threat-map-panel">
+  <PanelHeader
+    title="LIVE GLOBAL THREAT MONITOR"
+    subtitle="REAL-TIME SECURITY TELEMETRY"
+  />
+
+  <div className="global-threat-stats">
+    <div>
+      <span>24H THREATS</span>
+      <strong>1,284</strong>
+    </div>
+    <div>
+      <span>ACTIVE REGIONS</span>
+      <strong>18</strong>
+    </div>
+    <div>
+      <span>CRITICAL</span>
+      <strong className="critical-number">07</strong>
+    </div>
+  </div>
+
+  <div className="threat-monitor-toolbar">
+    <span>SEVERITY</span>
+
+    {["ALL", "CRITICAL", "HIGH", "MEDIUM"].map((filter) => (
+      <button
+        key={filter}
+        type="button"
+        className={threatFilter === filter ? "active" : ""}
+        onClick={() => setThreatFilter(filter)}
+      >
+        {filter}
+      </button>
+    ))}
+  </div>
+
+  <div className="threat-monitor-body">
+    <div className="threat-map">
+      <div className="map-grid" />
+
+      <div className="map-continent continent-a" />
+      <div className="map-continent continent-b" />
+      <div className="map-continent continent-c" />
+      <div className="map-continent continent-d" />
+
+      <div className="attack-route route-one" />
+      <div className="attack-route route-two" />
+      <div className="attack-route route-three" />
+
+      <ThreatPoint
+        x="19%"
+        y="36%"
+        label="EU"
+        tone="high"
+        active={threatFilter === "ALL" || threatFilter === "HIGH"}
+        onClick={() => setSelectedThreat("EU")}
+      />
+
+      <ThreatPoint
+        x="31%"
+        y="57%"
+        label="NA"
+        tone="medium"
+        active={threatFilter === "ALL" || threatFilter === "MEDIUM"}
+        onClick={() => setSelectedThreat("NA")}
+      />
+
+      <ThreatPoint
+        x="48%"
+        y="42%"
+        label="AS"
+        tone="critical"
+        active={threatFilter === "ALL" || threatFilter === "CRITICAL"}
+        onClick={() => setSelectedThreat("AS")}
+      />
+
+      <ThreatPoint
+        x="57%"
+        y="65%"
+        label="IN"
+        tone="high"
+        active={threatFilter === "ALL" || threatFilter === "HIGH"}
+        onClick={() => setSelectedThreat("IN")}
+      />
+
+      <ThreatPoint
+        x="71%"
+        y="49%"
+        label="JP"
+        tone="medium"
+        active={threatFilter === "ALL" || threatFilter === "MEDIUM"}
+        onClick={() => setSelectedThreat("JP")}
+      />
+
+      <ThreatPoint
+        x="78%"
+        y="71%"
+        label="AU"
+        tone="low"
+        active={threatFilter === "ALL"}
+        onClick={() => setSelectedThreat("AU")}
+      />
+
+      <div className="map-scan-line" />
+
+      <div className="map-legend">
+        <span><i className="critical-dot" /> CRITICAL</span>
+        <span><i className="high-dot" /> HIGH</span>
+        <span><i className="medium-dot" /> MEDIUM</span>
+        <span><i className="low-dot" /> LOW</span>
+      </div>
+
+      {selectedThreat && (
+        <div className="threat-detail-card">
+          <button
+            className="threat-detail-close"
+            type="button"
+            onClick={() => setSelectedThreat(null)}
+          >
+            ×
+          </button>
+
+          <span>THREAT DETECTED</span>
+
+          <strong>
+            {selectedThreat === "AS"
+              ? "Credential Attack"
+              : selectedThreat === "IN"
+              ? "Malicious Domain"
+              : selectedThreat === "EU"
+              ? "Suspicious Login"
+              : selectedThreat === "NA"
+              ? "Phishing Campaign"
+              : selectedThreat === "JP"
+              ? "Malware Delivery"
+              : "Unusual Network Activity"}
+          </strong>
+
+          <div className="threat-detail-grid">
+            <div>
+              <small>REGION</small>
+              <b>{selectedThreat}</b>
+            </div>
+
+            <div>
+              <small>SEVERITY</small>
+              <b>
+                {selectedThreat === "AS"
+                  ? "CRITICAL"
+                  : selectedThreat === "NA" ||
+                    selectedThreat === "IN" ||
+                    selectedThreat === "EU"
+                  ? "HIGH"
+                  : "MEDIUM"}
+              </b>
+            </div>
+          </div>
+
+          <button className="investigate-button" type="button">
+            INVESTIGATE THREAT ↗
+          </button>
+        </div>
+      )}
+    </div>
+
+    <div className="live-threat-feed">
+      <div className="feed-heading">
+        <span>LIVE THREAT FEED</span>
+        <i />
+      </div>
+
+      <div className="feed-item critical">
+        <i />
+        <div>
+          <strong>ASIA</strong>
+          <span>Credential Attack</span>
+        </div>
+        <time>2 min ago</time>
+      </div>
+
+      <div className="feed-item high">
+        <i />
+        <div>
+          <strong>EUROPE</strong>
+          <span>Malicious Domain</span>
+        </div>
+        <time>4 min ago</time>
+      </div>
+
+      <div className="feed-item high">
+        <i />
+        <div>
+          <strong>INDIA</strong>
+          <span>Suspicious Login</span>
+        </div>
+        <time>7 min ago</time>
+      </div>
+
+      <div className="feed-item medium">
+        <i />
+        <div>
+          <strong>NORTH AMERICA</strong>
+          <span>Phishing Campaign</span>
+        </div>
+        <time>11 min ago</time>
+      </div>
+
+      <div className="feed-item medium">
+        <i />
+        <div>
+          <strong>JAPAN</strong>
+          <span>Malware Delivery</span>
+        </div>
+        <time>16 min ago</time>
+      </div>
+    </div>
+  </div>
+</div><div className="soc-panel ai-panel">
+              <PanelHeader
+                title="AI THREAT INTELLIGENCE"
+                subtitle="ORCHESTRATOR / ONLINE"
+              />
+
+              <div className="ai-core">
+                <div className="ai-rings">
+                  <span />
+                  <span />
+                  <span />
+                  <div>AI</div>
+                </div>
+              </div>
+
+              <div className="ai-analysis">
+                <span>ANALYSIS STATUS</span>
+                <strong>CONTINUOUS MONITORING</strong>
+              </div>
+
+              <div className="ai-recommendation">
+                <div className="recommendation-icon">!</div>
+
+                <div>
+                  <span>AI RECOMMENDATION</span>
+                  <strong>3 high-risk endpoints require investigation.</strong>
+                  <p>
+                    Prioritize credential-related activity and
+                    suspicious authentication patterns.
+                  </p>
+                </div>
+              </div>
+
+              <div className="ai-tags">
+                <span>IOC CORRELATION</span>
+                <span>BEHAVIOUR ANALYSIS</span>
+                <span>PHISHING DETECTION</span>
+                <span>RISK SCORING</span>
+              </div>
+
+              <div className="ai-confidence">
+                <div>
+                  <span>THREAT CONFIDENCE</span>
+                  <strong>97.8%</strong>
+                </div>
+                <div className="confidence-bar">
+                  <i />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="soc-lower-grid">
+            <div className="soc-panel">
+              <PanelHeader
+                title="ACTIVE ALERTS"
+                subtitle="27 UNRESOLVED"
+                action="VIEW ALL"
+              />
+
+              <div className="alert-list">
+                {alerts.map((alert) => (
+                  <div className="alert-row" key={alert.title}>
+                    <div className={`alert-severity ${alert.level.toLowerCase()}`}>
+                      <i />
+                      {alert.level}
+                    </div>
+
+                    <div className="alert-main">
+                      <strong>{alert.title}</strong>
+                      <span>{alert.source}</span>
+                    </div>
+
+                    <time>{alert.time}</time>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="soc-panel">
+              <PanelHeader
+                title="THREAT ACTIVITY"
+                subtitle="LAST 24 HOURS"
+              />
+
+              <div className="activity-chart">
+                <div className="chart-y">
+                  <span>100</span>
+                  <span>75</span>
+                  <span>50</span>
+                  <span>25</span>
+                  <span>0</span>
+                </div>
+
+                <div className="chart-area">
+                  <div className="chart-grid-lines">
+                    <i /><i /><i /><i />
+                  </div>
+
+                  <svg
+                    viewBox="0 0 500 170"
+                    preserveAspectRatio="none"
+                    className="activity-svg"
+                  >
+                    <defs>
+                      <linearGradient id="activityFill" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#19b5a5" stopOpacity=".3" />
+                        <stop offset="100%" stopColor="#19b5a5" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+
+                    <path
+                      d="M0 145 L35 135 L70 140 L105 110 L140 123 L175 82 L210 96 L245 61 L280 75 L315 45 L350 73 L385 39 L420 53 L455 24 L500 42 L500 170 L0 170 Z"
+                      fill="url(#activityFill)"
+                    />
+
+                    <path
+                      d="M0 145 L35 135 L70 140 L105 110 L140 123 L175 82 L210 96 L245 61 L280 75 L315 45 L350 73 L385 39 L420 53 L455 24 L500 42"
+                      fill="none"
+                      stroke="#19b5a5"
+                      strokeWidth="2"
+                    />
+                  </svg>
+
+                  <div className="chart-labels">
+                    <span>00</span>
+                    <span>04</span>
+                    <span>08</span>
+                    <span>12</span>
+                    <span>16</span>
+                    <span>20</span>
+                    <span>24</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="soc-panel incidents-panel">
+            <PanelHeader
+              title="RECENT INCIDENTS"
+              subtitle="INCIDENT RESPONSE QUEUE"
+              action="OPEN INCIDENT CENTER"
+            />
+
+            <div className="incident-table">
+              <div className="incident-head">
+                <span>INCIDENT</span>
+                <span>THREAT TYPE</span>
+                <span>STATUS</span>
+                <span>UPDATED</span>
+              </div>
+
+              {incidents.map(([id, type, status, updated]) => (
+                <div className="incident-row" key={id}>
+                  <strong>{id}</strong>
+                  <span>{type}</span>
+                  <span className={`incident-status ${status.toLowerCase()}`}>
+                    <i />
+                    {status}
+                  </span>
+                  <time>{updated} ago</time>
+                </div>
+              ))}
+            </div>
+          </section>
+
+              <footer className="soc-footer">
+            <span>CYBERGUARD SECURITY INTELLIGENCE SYSTEMS</span>
+            <span>ALL SYSTEMS OPERATIONAL</span>
+            <span>BUILD 2.4.1 / 2026</span>
+          </footer>
+              </>
+          )}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+
+function SocCursor() {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [hovering, setHovering] = useState(false);
+  const [clicking, setClicking] = useState(false);
+
+  useEffect(() => {
+    const move = (event: MouseEvent) => {
+      setPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      const target = event.target as HTMLElement | null;
+
+      setHovering(
+        !!target?.closest(
+          "button, a, input, [role='button']"
+        )
+      );
+    };
+
+    const down = () => setClicking(true);
+    const up = () => setClicking(false);
+
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mousedown", down);
+    window.addEventListener("mouseup", up);
+
+    return () => {
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mousedown", down);
+      window.removeEventListener("mouseup", up);
+    };
+  }, []);
+
+  return (
+    <div
+      className={`soc-cursor ${hovering ? "hovering" : ""} ${
+        clicking ? "clicking" : ""
+      }`}
+      style={{
+        left: position.x,
+        top: position.y,
+      }}
+    >
+      <span className="soc-cursor-ring" />
+      <span className="soc-cursor-dot" />
+      <span className="soc-cursor-h h" />
+      <span className="soc-cursor-h v" />
+
+      {clicking && <span className="soc-cursor-pulse" />}
+
+      <span className="soc-cursor-label">
+        TRACKING
+      </span>
+    </div>
+  );
+}
+function Metric({
+  label,
+  value,
+  change,
+  tone,
+  icon,
+}: {
+  label: string;
+  value: string;
+  change: string;
+  tone: string;
+  icon: string;
+}) {
+  return (
+    <div className={`metric-card ${tone}`}>
+      <div className="metric-top">
+        <span>{label}</span>
+        <i>{icon}</i>
+      </div>
+
+      <div className="metric-value">{value}</div>
+
+      <div className="metric-bottom">
+        <span className="metric-pulse" />
+        {change}
+      </div>
+    </div>
+  );
+}
+
+function PanelHeader({
+  title,
+  subtitle,
+  action,
+}: {
+  title: string;
+  subtitle: string;
+  action?: string;
+}) {
+  return (
+    <div className="panel-header">
+      <div>
+        <h3>{title}</h3>
+        <span>{subtitle}</span>
+      </div>
+
+      {action && <button>{action} ↗</button>}
+    </div>
+  );
+}
+
+function ThreatPoint({
+  x,
+  y,
+  label,
+  tone,
+  active = true,
+  onClick,
+}: {
+  x: string;
+  y: string;
+  label: string;
+  tone: string;
+  active?: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      className={`threat-point ${tone} ${active ? "" : "filtered-out"}`}
+      style={{ left: x, top: y }}
+      onClick={onClick}
+      type="button"
+      aria-label={`${label} threat`}
+    >
+      <i />
+      <span>{label}</span>
+    </button>
+  );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
