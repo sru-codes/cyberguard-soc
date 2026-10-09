@@ -91,5 +91,3 @@ Provide a direct, useful answer.
         "model": "gemini-3.8-flash",
         "mode": mode
     }
-
-\n

@@ -260,5 +260,3 @@ export default function AIDefense({
     </div>
   );
 }
-
-\n

@@ -4,7 +4,10 @@ import SimpleAlerts from "./SimpleAlerts";
 import SimplePersonCheck from "./SimplePersonCheck";
 import SimpleWebsiteCheck from "./SimpleWebsiteCheck";
 import { useEffect, useState } from "react";
-import SimpleEmailCheck from "./SimpleEmailCheck";type Props = {
+import SimpleEmailCheck from "./SimpleEmailCheck";
+import AIDefense from "./AIDefense";
+
+type Props = {
   onSwitchToExpert?: () => void;
 };
 
@@ -54,6 +57,7 @@ function SimpleCursor() {
 export default function SimpleMode({ onSwitchToExpert }: Props) {
   const [helpOpen, setHelpOpen] = useState(false);
   const [alertsOpen, setAlertsOpen] = useState(false);
+  const [activePage, setActivePage] = useState<"home" | "ai-defense">("home");
   return (
     <>
       <SimpleCursor />        <SimpleEmailCheck />        <SimpleWebsiteCheck />
@@ -77,7 +81,11 @@ export default function SimpleMode({ onSwitchToExpert }: Props) {
 
         <nav className="simple-nav">
 
-          <button className="simple-nav-item active">
+          <button
+            type="button"
+            className={`simple-nav-item ${activePage === "home" ? "active" : ""}`}
+            onClick={() => setActivePage("home")}
+          >
             <span></span>
             <strong>Home</strong>
           </button>
@@ -118,6 +126,15 @@ export default function SimpleMode({ onSwitchToExpert }: Props) {
           >
             <span>?</span>
             <strong>Help</strong>
+          </button>
+
+          <button
+            type="button"
+            className={`simple-nav-item ${activePage === "ai-defense" ? "active" : ""}`}
+            onClick={() => setActivePage("ai-defense")}
+          >
+            <span>AI</span>
+            <strong>AI Defense</strong>
           </button>
 
         </nav>
@@ -163,9 +180,27 @@ export default function SimpleMode({ onSwitchToExpert }: Props) {
 
         </header>
 
+        <nav className="simple-mobile-nav" aria-label="Simple Mode pages">
+          <button
+            type="button"
+            className={activePage === "home" ? "active" : ""}
+            aria-current={activePage === "home" ? "page" : undefined}
+            onClick={() => setActivePage("home")}
+          >
+            Home
+          </button>
+          <button
+            type="button"
+            className={activePage === "ai-defense" ? "active" : ""}
+            aria-current={activePage === "ai-defense" ? "page" : undefined}
+            onClick={() => setActivePage("ai-defense")}
+          >
+            Ask CyberGuard
+          </button>
+        </nav>
 
         {/* CONTENT */}
-        <div className="simple-content">
+        <div className="simple-content" hidden={activePage === "ai-defense"}>
 
           <div className="simple-page-eyebrow">
             SECURITY CHECK / LIVE
@@ -237,6 +272,10 @@ export default function SimpleMode({ onSwitchToExpert }: Props) {
 
           </div>
 
+        </div>
+
+        <div hidden={activePage !== "ai-defense"}>
+          <AIDefense mode="simple" />
         </div>
 
       </section>
