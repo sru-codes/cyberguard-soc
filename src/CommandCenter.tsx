@@ -7,6 +7,7 @@ import BehaviouralThreats from "./BehaviouralThreats";
 import IncidentResponse from "./IncidentResponse";
 import ThreatIntelligence from "./ThreatIntelligence";
 import Reports from "./Reports";
+import AIDefense from "./AIDefense";
 import Settings from "./Settings";
 
 type Props = {
@@ -15,6 +16,7 @@ type Props = {
 
 const navItems = [
   { icon: "⌂", label: "Overview" },
+  { icon: "✦", label: "AI Defense" },
   { icon: "◉", label: "Threat Scanner" },
   { icon: "⌁", label: "Phishing Defense" },
   { icon: "◇", label: "Impersonation" },
@@ -390,6 +392,10 @@ export default function CommandCenter({ onLogout }: Props) {
         <div className="soc-content">
           {activeNav === "Threat Scanner" ? (
       <ThreatScanner />
+    ) : activeNav === "AI Defense" ? (
+
+      <AIDefense mode="expert" />
+
     ) : activeNav === "Phishing Defense" ? (
       <PhishingDefense />
     ) : activeNav === "Impersonation" ? (
